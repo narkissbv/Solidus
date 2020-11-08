@@ -34,17 +34,14 @@
     </div>
     <table>
       <tr>
-        <th>Price</th>
-        <th>Status</th>
-        <th>Timestamp</th>
+        <th @click="sortEvents('price')">Price</th>
+        <th @click="sortEvents('status')">Status</th>
+        <th @click="sortEvents('timestamp')">Timestamp</th>
       </tr>
       <Event v-for="(event, idx) in filteredEvents" :key="idx"
              :event="{...event, idx}"
              @selection="selectCurrent(idx)"/>
     </table>
-
-
-    
   </div>
 </template>
 
@@ -57,7 +54,12 @@ export default {
       events,
       currentIdx: 0,
       eventsDisplay: [],
-      filter: 'All'
+      filter: 'All',
+      sorting: {
+        price: false,
+        status: false,
+        timestamp: false
+      }
     }
   },
   components: {
@@ -89,9 +91,35 @@ export default {
     },
     selectCurrent(idx) {
       this.currentIdx = idx
-    }
+    },
+    sortEvents (sort) {
+      switch (sort) {
+        case 'price':
+          this.sorting.timestamp = false
+          this.sorting.status = false
+          break
+        case 'status':
+          this.sorting.timestamp = false
+          this.sorting.price = false
+          break
+        case 'timestamp':
+          this.sorting.price = false
+          this.sorting.status = false
+          break
+        default:
+          break
+      }
+      if (this.sorting[sort]) {
+        this.filteredEvents.sort( (a, b) => a[sort] > b[sort] ? 1 : -1 )
+      } else {
+        this.filteredEvents.sort( (a, b) => a[sort] < b[sort] ? 1 : -1 )
+      }
+      this.sorting[sort] = !this.sorting[sort]
+    },
   },
   computed: {
+    // filter the displayed events according to the filter select box
+    // (dropdown element)
     filteredEvents () {
       if (this.filter === 'All') {
         return this.events
@@ -102,11 +130,22 @@ export default {
       }
     },
     currentEvent () {
+      // the event currently showing in the player box
       return this.filteredEvents[this.currentIdx]
     },
     statuses () {
+      // extract all existing statuses from the events data, to display
+      // in the select box
       return Array.from(new Set(this.events.map((event) => event.status)))
     }
+  },
+  mounted () {
+    // convert prices to integers to help sorting then
+    // having some missing leading zeros in some of the events.
+    // This modifies the actual data we have received
+    this.events.forEach( (event) => {
+      event.price = parseInt(event.price)
+    })
   }
 }
 </script>
