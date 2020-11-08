@@ -108,7 +108,6 @@ export default {
           this.currentIdx+=step
           if (step > 0) {
             if (this.currentIdx > this.filteredEvents.length - 1) {
-              this.currentEvent = this.filteredEvents[this.filteredEvents.length - 1]
               this.currentIdx = this.filteredEvents.length - 1
             }
           } else {
